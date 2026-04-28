@@ -105,7 +105,6 @@
 
         .sop-title-box { position: absolute; border: 2px solid #a47715; background-color: #fef9c3; padding: 12px 16px; color: #854d0e; font-size: 16px; font-weight: bold; font-family: 'Consolas', 'Monaco', monospace; z-index: 3000; cursor: move; user-select: none; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); min-width: 150px; max-width: 400px; white-space: pre-wrap; word-wrap: break-word; text-align: center; }
         
-        /* 🌟 單行參數列 */
         .slider-row { display: flex; gap: 15px; flex-wrap: nowrap; overflow-x: auto; align-items: center; padding-bottom: 8px; width: 100%; }
         .slider-container { display: flex; align-items: center; background: #ffffff; padding: 6px 12px; border-radius: 8px; flex-shrink: 0; gap: 8px; border: 1px solid #cbd5e1; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
         .slider-container input { cursor: pointer; accent-color: var(--primary); width: 80px; }
@@ -119,12 +118,15 @@
         .toast i { font-size: 24px; }
         
         table { border-collapse: collapse; width: 100%; background: white; border-radius: 0; }
-        th, td { border: 1px solid var(--border); padding: 12px; text-align: left; }
+        th, td { border: 1px solid var(--border); padding: 12px; text-align: left; transition: background-color 0.3s; }
         
         thead th { position: sticky; top: 0; background-color: #f8fafc; z-index: 10; box-shadow: 0 1px 0 var(--border), 0 -1px 0 var(--border); cursor: pointer; user-select: none; font-weight: 600; color: var(--text-muted); }
         thead th:hover { background-color: #f1f5f9; }
 
-        .table-scroll-container { max-height: 60vh; overflow-y: auto; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: white; margin-top: 15px; }
+        /* 🌟 重複料號的標示樣式 */
+        .duplicate-row { background-color: #fef2f2 !important; border-left: 4px solid var(--danger) !important; }
+
+        .table-scroll-container { max-height: 60vh; overflow-y: auto; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: white; margin-top: 15px; scroll-behavior: smooth; }
         .toolbar { display: flex; gap: 10px; align-items: center; width: 100%; background: #f1f5f9; padding: 16px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-wrap: wrap; }
         .sticky-wrapper { position: sticky; top: -24px; z-index: 100; background: var(--surface); padding: 24px 0 16px 0; margin: -24px 0 0 0; }
         .sticky-toolbar { background: #f1f5f9; padding: 16px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -382,7 +384,6 @@
         function resetIdleTimer() {
             clearTimeout(idleTimeout);
             idleTimeout = setTimeout(() => {
-                // 閒置超時，執行強制登出
                 document.getElementById('loginOverlay').style.display = 'flex';
                 document.getElementById('mainApp').style.display = 'none';
                 document.getElementById('loginPass').value = '';
@@ -390,7 +391,7 @@
             }, IDLE_LIMIT_MS);
         }
 
-        // 監聽使用者的各種操作來重置計時器
+        // 監聽操作，有動靜就重置 4 小時倒數
         ['mousemove', 'keydown', 'scroll', 'click', 'touchstart'].forEach(evt => {
             document.addEventListener(evt, () => {
                 if(document.getElementById('mainApp').style.display === 'block') {
@@ -404,11 +405,12 @@
             const user = document.getElementById('loginUser').value;
             const pass = document.getElementById('loginPass').value;
             
+            // 這裡設定預設帳號密碼
             if(user === 'admin' && pass === 'shimshim') {
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
                 showToast(currentLang === 'zh' ? "登入成功 / Welcome" : "Login Successful", "success");
-                resetIdleTimer(); // 登入後開始計時
+                resetIdleTimer(); 
             } else {
                 const err = document.getElementById('loginError');
                 err.innerText = currentLang === 'zh' ? "帳號或密碼錯誤 / Invalid Credentials" : "Invalid Credentials";
@@ -919,13 +921,13 @@
 
         function generateConfirmedHTML(itemId, part, desc, orig, qty) {
             const badge = itemId ? `<span class="item-id-badge">${itemId}</span>` : '';
-            return `<div class="drag-handle"><i class="ph ph-dots-six-vertical"></i></div><div class="item-status"><i class="ph ph-check-circle" style="color:var(--success);"></i></div><div class="item-text">${badge}<strong>${part}</strong> <span style="color:#059669; font-size:13px;">(${desc})</span><br><span style="color:var(--text-muted); font-size:13px;">${i18nDict[currentLang].lblOrig} ${orig}</span></div><label style="font-size:13px; font-weight:600; color:var(--text-muted);">${i18nDict[currentLang].lblQty}</label><input type="number" class="item-qty" value="${qty}" min="0" oninput="checkZeroQty(this)"><button class="btn-secondary action-btn" onclick="enableEdit(this)" title="Edit"><i class="ph ph-pencil-simple"></i></button><button class="btn-warning action-btn" onclick="duplicateItem(this)" title="Copy"><i class="ph ph-copy"></i></button><button class="btn-danger action-btn" onclick="this.parentNode.remove()" title="Delete"><i class="ph ph-trash"></i></button>`;
+            return `<div class="drag-handle"><i class="ph ph-dots-six-vertical"></i></div><div class="item-status"><i class="ph ph-check-circle" style="color:var(--success);"></i></div><div class="item-text">${badge}<strong>${part}</strong> <span style="color:#059669; font-size:13px;">(${desc})</span><br><span style="color:var(--text-muted); font-size:13px;">${i18nDict[currentLang].lblOrig} ${orig}</span></div><label style="font-size:13px; font-weight:600; color:var(--text-muted);">${i18nDict[currentLang].lblQty}</label><input type="number" class="item-qty" value="${qty}" min="0" oninput="checkZeroQty(this)"><button class="btn-secondary action-btn" onclick="enableEdit(this)" title="Edit"><i class="ph ph-pencil-simple"></i></button><button class="btn-warning action-btn" onclick="duplicateItem(this)" title="Copy"><i class="ph ph-copy"></i></button><button class="btn-danger action-btn" onclick="this.parentNode.remove(); updateCounts();" title="Delete"><i class="ph ph-trash"></i></button>`;
         }
 
         function generateEditHTML(itemId, part, desc, orig, qty, isError) {
             const statusIcon = isError ? '<i class="ph ph-warning-circle" style="color:var(--danger);"></i>' : '<i class="ph ph-plus-circle" style="color:var(--warning);"></i>'; 
             const partStyle = isError ? 'border-color:var(--danger); color:var(--danger);' : '';
-            return `<div class="drag-handle"><i class="ph ph-dots-six-vertical"></i></div><div class="item-status">${statusIcon}</div><div class="edit-box"><div class="edit-row"><input type="text" class="edit-item-id" placeholder="ID" value="${itemId}"><input type="text" class="edit-part" placeholder="Part Number" value="${part}" style="${partStyle}" oninput="this.style.borderColor='#cbd5e1'; this.style.color='#333';"><button class="btn-success action-btn" onclick="confirmEdit(this)"><i class="ph ph-check"></i> ${i18nDict[currentLang].btnConfirm}</button></div><input type="text" class="edit-desc" placeholder="Size (e.g. 9 X 16 X 0.20)" value="${desc}" onchange="autoMatchPartNumber(this)"><input type="hidden" class="edit-orig" value="${orig}"></div><label style="font-size:13px; font-weight:600;">${i18nDict[currentLang].lblQty}</label><input type="number" class="item-qty" value="${qty}" min="0" oninput="checkZeroQty(this)"><button class="btn-danger action-btn" onclick="this.parentNode.remove()"><i class="ph ph-trash"></i></button>`;
+            return `<div class="drag-handle"><i class="ph ph-dots-six-vertical"></i></div><div class="item-status">${statusIcon}</div><div class="edit-box"><div class="edit-row"><input type="text" class="edit-item-id" placeholder="ID" value="${itemId}"><input type="text" class="edit-part" placeholder="Part Number" value="${part}" style="${partStyle}" oninput="this.style.borderColor='#cbd5e1'; this.style.color='#333';"><button class="btn-success action-btn" onclick="confirmEdit(this)"><i class="ph ph-check"></i> ${i18nDict[currentLang].btnConfirm}</button></div><input type="text" class="edit-desc" placeholder="Size (e.g. 9 X 16 X 0.20)" value="${desc}" onchange="autoMatchPartNumber(this)"><input type="hidden" class="edit-orig" value="${orig}"></div><label style="font-size:13px; font-weight:600;">${i18nDict[currentLang].lblQty}</label><input type="number" class="item-qty" value="${qty}" min="0" oninput="checkZeroQty(this)"><button class="btn-danger action-btn" onclick="this.parentNode.remove(); updateCounts();"><i class="ph ph-trash"></i></button>`;
         }
 
         function createListItem(originalText, matchedDesc, matchedPart, itemId = '', qty = 1, isError = false) {
@@ -937,6 +939,7 @@
             if(parseInt(qty) === 0) div.classList.add('zero-qty');
             list.appendChild(div);
             if(itemId && globalDescDict[itemId]) { globalDescDict[itemId].qty = qty; }
+            updateCounts();
         }
 
         function confirmEdit(btn) {
@@ -957,6 +960,7 @@
             div.setAttribute('draggable', 'true'); div.addEventListener('dragstart', handleDragStart); div.addEventListener('dragend', handleDragEnd);
             div.className = 'list-item manual'; div.dataset.orig = ''; div.dataset.desc = ''; div.dataset.part = ''; div.dataset.itemId = '';
             div.innerHTML = generateEditHTML('', '', '', i18nDict[currentLang].manualEntry, 1, false); list.insertBefore(div, list.firstChild);
+            updateCounts();
         }
 
         function duplicateItem(btn) {
@@ -968,6 +972,7 @@
             if (div.querySelector('.edit-box')) newDiv.innerHTML = generateEditHTML(itemId, part, desc, orig + copySuffix, qty, false); else newDiv.innerHTML = generateConfirmedHTML(itemId, part, desc, orig + copySuffix, qty);
             if(parseInt(qty) === 0) newDiv.classList.add('zero-qty');
             if(div.nextSibling) list.insertBefore(newDiv, div.nextSibling); else list.appendChild(newDiv);
+            updateCounts();
         }
 
         let draggedItem = null;
@@ -1394,7 +1399,12 @@
                 let partText = rows[i].getElementsByTagName("td")[1].innerText.trim(); 
                 if (partCount[partText] > 1) { rows[i].classList.add('duplicate-row'); hasDuplicate = true; if (!duplicateList.includes(partText)) duplicateList.push(partText); } 
             } 
-            if (hasDuplicate) showToast(currentLang==='zh'?'發現重複料號':'Duplicates found', "warning"); 
+            if (hasDuplicate) {
+                showToast(currentLang==='zh'?'發現重複料號':'Duplicates found', "warning");
+                // 🌟 自動捲動到第一個重複的地方 🌟
+                const firstDuplicate = document.querySelector('.duplicate-row');
+                if(firstDuplicate) firstDuplicate.scrollIntoView({behavior: "smooth", block: "center"});
+            }
             else showToast(currentLang==='zh'?'總表沒有重複料號':'No duplicates', "success"); 
         }
         
