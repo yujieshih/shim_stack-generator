@@ -1,0 +1,27 @@
+{
+  "name": "Shim_Stack Image Generator",
+  "short_name": "ShimTool",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#363636",
+  "theme_color": "#363636",
+  "description": "A precision engineering tool for generating shim stack SOP diagrams.",
+  "lang": "zh-TW",
+  "dir": "ltr",
+  "orientation": "any",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
