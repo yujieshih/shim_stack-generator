@@ -273,7 +273,7 @@
             <div id="sopOutputSection" style="display: none; margin-top: 40px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h3 style="display: flex; align-items: center; gap: 8px; color: #0f172a; margin: 0;"><i class="ph ph-image"></i> <span data-i18n="previewTitle">結果與微調</span></h3>
-                    <button class="btn-primary" id="btnCopySOP" style="background-color: #0f172a;" onclick="copySOPImage(false)">
+                    <button class="btn-secondary" id="btnCopySOP" style="background-color: #0f172a;" onclick="copySOPImage(false)">
                         <i class="ph ph-copy" style="font-size: 18px;"></i> <span data-i18n="btnCopy">複製圖片</span>
                     </button>
                 </div>
@@ -535,6 +535,7 @@
             document.getElementById('langMenu').classList.remove('show');
         }
 
+        // 🌟 正確的數量更新函式 🌟
         function updateDbCount() {
             const count = document.querySelectorAll('#tableBody tr').length;
             const badge = document.getElementById('dbCountBadge');
@@ -601,15 +602,11 @@
             if(document.getElementById('sopCanvas').innerHTML !== '') generateSOP(false, true);
         }
 
-        // 🌟 退回原本可使用的「100% 重置」邏輯 🌟
         function resetWorkspace() {
             if(!confirm(i18nDict[currentLang].confirmClear)) return;
-            document.getElementById('resultList').innerHTML = ''; 
-            document.getElementById('ocrResultContainer').style.display = 'none';
-            document.getElementById('sopOutputSection').style.display = 'none'; 
-            document.getElementById('sopCanvas').innerHTML = '';
-            document.getElementById('manualSeqBox').style.display = 'none'; 
-            document.getElementById('balloonGridContainer').innerHTML = '';
+            document.getElementById('resultList').innerHTML = ''; document.getElementById('ocrResultContainer').style.display = 'none';
+            document.getElementById('sopOutputSection').style.display = 'none'; document.getElementById('sopCanvas').innerHTML = '';
+            document.getElementById('manualSeqBox').style.display = 'none'; document.getElementById('balloonGridContainer').innerHTML = '';
             document.getElementById('stackOcrStatus').style.display = 'none'; 
             document.getElementById('sopTitleInput').value = ''; 
             
@@ -622,8 +619,7 @@
             document.getElementById('titleDesc').innerHTML = `<span data-i18n="step1">${i18nDict[currentLang].step1}</span> <span style="font-size:12px; font-weight:normal; color:var(--text-muted);" data-i18n="step1Req">${i18nDict[currentLang].step1Req}</span>`;
             document.getElementById('titleStack').innerHTML = `<span data-i18n="step2">${i18nDict[currentLang].step2}</span> <span style="font-size:12px; font-weight:normal; color:var(--text-muted);" data-i18n="step2Opt">${i18nDict[currentLang].step2Opt}</span>`;
             
-            document.getElementById('btnStartOCR').disabled = true; 
-            setActiveZone('Desc');
+            document.getElementById('btnStartOCR').disabled = true; setActiveZone('Desc');
             
             const leftSide = document.getElementById('resultList').parentElement; const rightSide = document.querySelector('.generate-controls');
             leftSide.style.flex = '1 1 50%'; rightSide.style.flex = '1 1 50%';
@@ -709,7 +705,7 @@
             }
         });
 
-        // 🌟 徹底退回原本 100% 穩定的 Proxy 連線機制 🌟
+        // 🌟 退回原本 100% 穩定的代理伺服器連線機制 🌟
         async function callOcrApi(base64Img, engine = '2', isTable = 'true', loaderTextEl = null) {
             for (let attempt = 1; attempt <= 3; attempt++) {
                 try {
@@ -768,7 +764,7 @@
 
                 if(base64Desc) {
                     descText = await callOcrApi(base64Desc, '2', 'true', loaderText);
-                    if(!descText) { showToast(currentLang==='zh'?"辨識失敗！":"Extraction failed!", 'error'); btn.disabled = false; loader.style.display = 'none'; return; }
+                    if(!descText) { showToast(currentLang==='zh'?"辨識失敗或網路連線異常！":"Extraction failed!", 'error'); btn.disabled = false; loader.style.display = 'none'; return; }
                 }
                 if(base64Desc && base64Stack) { loaderText.innerText = (currentLang==='zh'?"連線緩衝中...":"Cooling down..."); await new Promise(resolve => setTimeout(resolve, 2000)); }
 
@@ -960,13 +956,13 @@
 
         function generateConfirmedHTML(itemId, part, desc, orig, qty) {
             const badge = itemId ? `<span class="item-id-badge">${itemId}</span>` : '';
-            return `<div class="drag-handle"><i class="ph ph-dots-six-vertical"></i></div><div class="item-status"><i class="ph ph-check-circle" style="color:var(--success);"></i></div><div class="item-text">${badge}<strong>${part}</strong> <span style="color:#059669; font-size:13px;">(${desc})</span><br><span style="color:var(--text-muted); font-size:13px;">${i18nDict[currentLang].lblOrig} ${orig}</span></div><label style="font-size:13px; font-weight:600; color:var(--text-muted);">${i18nDict[currentLang].lblQty}</label><input type="number" class="item-qty" value="${qty}" min="0" oninput="checkZeroQty(this)"><button class="btn-secondary action-btn" onclick="enableEdit(this)" title="Edit"><i class="ph ph-pencil-simple"></i></button><button class="btn-warning action-btn" onclick="duplicateItem(this)" title="Copy"><i class="ph ph-copy"></i></button><button class="btn-danger action-btn" onclick="this.parentNode.remove(); updateCounts();" title="Delete"><i class="ph ph-trash"></i></button>`;
+            return `<div class="drag-handle"><i class="ph ph-dots-six-vertical"></i></div><div class="item-status"><i class="ph ph-check-circle" style="color:var(--success);"></i></div><div class="item-text">${badge}<strong>${part}</strong> <span style="color:#059669; font-size:13px;">(${desc})</span><br><span style="color:var(--text-muted); font-size:13px;">${i18nDict[currentLang].lblOrig} ${orig}</span></div><label style="font-size:13px; font-weight:600; color:var(--text-muted);">${i18nDict[currentLang].lblQty}</label><input type="number" class="item-qty" value="${qty}" min="0" oninput="checkZeroQty(this)"><button class="btn-secondary action-btn" onclick="enableEdit(this)" title="Edit"><i class="ph ph-pencil-simple"></i></button><button class="btn-warning action-btn" onclick="duplicateItem(this)" title="Copy"><i class="ph ph-copy"></i></button><button class="btn-danger action-btn" onclick="this.parentNode.remove();" title="Delete"><i class="ph ph-trash"></i></button>`;
         }
 
         function generateEditHTML(itemId, part, desc, orig, qty, isError) {
             const statusIcon = isError ? '<i class="ph ph-warning-circle" style="color:var(--danger);"></i>' : '<i class="ph ph-plus-circle" style="color:var(--warning);"></i>'; 
             const partStyle = isError ? 'border-color:var(--danger); color:var(--danger);' : '';
-            return `<div class="drag-handle"><i class="ph ph-dots-six-vertical"></i></div><div class="item-status">${statusIcon}</div><div class="edit-box"><div class="edit-row"><input type="text" class="edit-item-id" placeholder="ID" value="${itemId}"><input type="text" class="edit-part" placeholder="Part Number" value="${part}" style="${partStyle}" oninput="this.style.borderColor='#cbd5e1'; this.style.color='#333';"><button class="btn-success action-btn" onclick="confirmEdit(this)"><i class="ph ph-check"></i> ${i18nDict[currentLang].btnConfirm}</button></div><input type="text" class="edit-desc" placeholder="Size (e.g. 9 X 16 X 0.20)" value="${desc}" onchange="autoMatchPartNumber(this)"><input type="hidden" class="edit-orig" value="${orig}"></div><label style="font-size:13px; font-weight:600;">${i18nDict[currentLang].lblQty}</label><input type="number" class="item-qty" value="${qty}" min="0" oninput="checkZeroQty(this)"><button class="btn-danger action-btn" onclick="this.parentNode.remove(); updateCounts();"><i class="ph ph-trash"></i></button>`;
+            return `<div class="drag-handle"><i class="ph ph-dots-six-vertical"></i></div><div class="item-status">${statusIcon}</div><div class="edit-box"><div class="edit-row"><input type="text" class="edit-item-id" placeholder="ID" value="${itemId}"><input type="text" class="edit-part" placeholder="Part Number" value="${part}" style="${partStyle}" oninput="this.style.borderColor='#cbd5e1'; this.style.color='#333';"><button class="btn-success action-btn" onclick="confirmEdit(this)"><i class="ph ph-check"></i> ${i18nDict[currentLang].btnConfirm}</button></div><input type="text" class="edit-desc" placeholder="Size (e.g. 9 X 16 X 0.20)" value="${desc}" onchange="autoMatchPartNumber(this)"><input type="hidden" class="edit-orig" value="${orig}"></div><label style="font-size:13px; font-weight:600;">${i18nDict[currentLang].lblQty}</label><input type="number" class="item-qty" value="${qty}" min="0" oninput="checkZeroQty(this)"><button class="btn-danger action-btn" onclick="this.parentNode.remove();"><i class="ph ph-trash"></i></button>`;
         }
 
         function createListItem(originalText, matchedDesc, matchedPart, itemId = '', qty = 1, isError = false) {
@@ -978,7 +974,6 @@
             if(parseInt(qty) === 0) div.classList.add('zero-qty');
             list.appendChild(div);
             if(itemId && globalDescDict[itemId]) { globalDescDict[itemId].qty = qty; }
-            updateCounts();
         }
 
         function confirmEdit(btn) {
@@ -999,7 +994,6 @@
             div.setAttribute('draggable', 'true'); div.addEventListener('dragstart', handleDragStart); div.addEventListener('dragend', handleDragEnd);
             div.className = 'list-item manual'; div.dataset.orig = ''; div.dataset.desc = ''; div.dataset.part = ''; div.dataset.itemId = '';
             div.innerHTML = generateEditHTML('', '', '', i18nDict[currentLang].manualEntry, 1, false); list.insertBefore(div, list.firstChild);
-            updateCounts();
         }
 
         function duplicateItem(btn) {
@@ -1011,7 +1005,6 @@
             if (div.querySelector('.edit-box')) newDiv.innerHTML = generateEditHTML(itemId, part, desc, orig + copySuffix, qty, false); else newDiv.innerHTML = generateConfirmedHTML(itemId, part, desc, orig + copySuffix, qty);
             if(parseInt(qty) === 0) newDiv.classList.add('zero-qty');
             if(div.nextSibling) list.insertBefore(newDiv, div.nextSibling); else list.appendChild(newDiv);
-            updateCounts();
         }
 
         let draggedItem = null;
@@ -1208,7 +1201,6 @@
             if(document.getElementById('historyTab').classList.contains('active')) {
                 renderHistoryTab();
             }
-            updateCounts();
         }
 
         function toggleHistorySort() {
@@ -1255,7 +1247,7 @@
                 const displayTitle = record.sopTitle ? record.sopTitle : record.name;
                 const titleSnippet = `<div style="font-size:12px; color:var(--warning); background:#fffbeb; padding:4px 8px; border-radius:4px; display:inline-block; margin-top:6px; font-family: monospace;">${displayTitle.replace(/\n/g, ' ↵ ')}</div>`;
                 
-                card.innerHTML = `<div class="history-info"><div class="history-title">${record.name}</div><div class="history-date"><i class="ph ph-calendar-blank"></i> ${record.date} | ${record.data.length} ${currentLang==='zh'?'筆':'Items'}</div>${titleSnippet}</div><div style="display:flex; gap:8px;"><button class="btn-secondary" onclick="loadHistoryItem('${record.id}')"><i class="ph ph-download-simple"></i> ${currentLang==='zh'?'載入':'Load'}</button><button class="btn-danger" onclick="deleteHistoryItem('${record.id}')"><i class="ph ph-trash"></i></button></div>`;
+                card.innerHTML = `<div class="history-info"><div class="history-title">${record.name}</div><div class="history-date"><i class="ph ph-calendar-blank"></i> ${record.date} | ${record.data.length} ${currentLang==='zh'?'筆':'Items'}</div>${titleSnippet}</div><div style="display:flex; gap:8px;"><button class="btn-primary" onclick="loadHistoryItem('${record.id}')"><i class="ph ph-download-simple"></i> ${currentLang==='zh'?'載入':'Load'}</button><button class="btn-danger" onclick="deleteHistoryItem('${record.id}')"><i class="ph ph-trash"></i></button></div>`;
                 container.appendChild(card);
             });
 
@@ -1300,7 +1292,6 @@
                 history = history.filter(r => r.id !== id);
                 localStorage.setItem('myShimHistory', JSON.stringify(history));
                 renderHistoryTab();
-                updateCounts();
             }
         }
 
