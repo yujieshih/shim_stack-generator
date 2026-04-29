@@ -4,23 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shim_Stack Image Generator</title>
+    
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-512.png">
     <meta name="theme-color" content="#363636">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script async src="https://docs.opencv.org/4.8.0/opencv.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(reg => console.log('Service Worker Registered.', reg))
-                    .catch(err => console.log('Service Worker Registration Failed.', err));
-            });
-        }
-    </script>
         :root { --primary: #0ea5e9; --primary-hover: #0284c7; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --bg: #f8fafc; --surface: #ffffff; --border: #e2e8f0; --text-main: #334155; --text-muted: #64748b; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: var(--bg); color: var(--text-main); margin: 0; line-height: 1.5; position: relative; min-height: 100vh; }
         
@@ -35,7 +28,7 @@
         .login-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; outline: none; transition: 0.2s; }
         .login-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1); }
 
-        /* 🌐 語言下拉選單 */
+        /* 🌐 語言下拉選單 (保留高級毛玻璃) */
         .lang-wrapper { position: fixed; top: 15px; right: 20px; z-index: 9999; }
         .lang-btn { background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--text-main); border: 1px solid rgba(255, 255, 255, 0.4); padding: 8px 12px; border-radius: 6px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; gap: 6px; }
         .lang-btn:hover { background: rgba(255, 255, 255, 0.5); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
@@ -57,14 +50,25 @@
         .tab-content { display: none; background: var(--surface); padding: 24px; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .tab-content.active { display: block; }
 
-        button { padding: 8px 16px; cursor: pointer; border: none; border-radius: 6px; background-color: var(--primary); color: white; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s ease; font-size: 14px; }
-        button:hover { background-color: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.2); }
-        button:active { transform: translateY(0); }
-        button:disabled { background-color: #cbd5e1; cursor: not-allowed; transform: none; box-shadow: none; color: #f8fafc;}
-        .btn-danger { background-color: var(--danger); } .btn-danger:hover { background-color: #dc2626; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2);}
-        .btn-success { background-color: var(--success); } .btn-success:hover { background-color: #059669; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);}
-        .btn-warning { background-color: var(--warning); color: #fff; } .btn-warning:hover { background-color: #d97706; }
-        .btn-secondary { background-color: var(--text-muted); padding: 6px 12px; font-size: 13px;} .btn-secondary:hover { background-color: #475569; }
+        /* 🌟 恢復高對比的實體按鈕樣式 */
+        button { font-family: inherit; padding: 8px 16px; cursor: pointer; border: none; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s ease; font-size: 14px; }
+        
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.2); }
+        
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-danger:hover { background-color: #dc2626; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2);}
+        
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-success:hover { background-color: #059669; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);}
+        
+        .btn-warning { background-color: var(--warning); color: #fff; }
+        .btn-warning:hover { background-color: #d97706; }
+        
+        .btn-secondary { background-color: var(--text-muted); color: white; padding: 6px 12px; font-size: 13px;}
+        .btn-secondary:hover { background-color: #475569; }
+
+        button:disabled { background-color: #cbd5e1 !important; color: #f8fafc !important; cursor: not-allowed; transform: none; box-shadow: none; pointer-events: none;}
 
         .paste-container { display: flex; gap: 20px; margin-bottom: 24px; }
         .paste-zone { flex: 1; border: 2px dashed #cbd5e1; padding: 20px; text-align: center; color: var(--text-muted); border-radius: 12px; background: #f8fafc; transition: all 0.3s ease; cursor: pointer; position: relative; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;}
@@ -122,7 +126,7 @@
         .slider-container input { cursor: pointer; accent-color: var(--primary); width: 80px; }
         
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;}
-        .toast { background: white; border-left: 4px solid var(--primary); padding: 16px 20px; border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px; transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); font-weight: 600; font-size: 15px;}
+        .toast { background: white; border-left: 4px solid var(--primary); padding: 16px 20px; border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px; transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); font-weight: 600; font-size: 15px; color: var(--text-main); }
         .toast.show { transform: translateX(0); }
         .toast-success { border-color: var(--success); color: #064e3b; }
         .toast-error { border-color: var(--danger); color: #7f1d1d; }
@@ -135,7 +139,6 @@
         thead th { position: sticky; top: 0; background-color: #f8fafc; z-index: 10; box-shadow: 0 1px 0 var(--border), 0 -1px 0 var(--border); cursor: pointer; user-select: none; font-weight: 600; color: var(--text-muted); }
         thead th:hover { background-color: #f1f5f9; }
 
-        /* 🌟 重複料號的標示樣式 */
         .duplicate-row { background-color: #fef2f2 !important; border-left: 4px solid var(--danger) !important; }
 
         .table-scroll-container { max-height: 60vh; overflow-y: auto; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: white; margin-top: 15px; scroll-behavior: smooth; }
@@ -150,6 +153,7 @@
         
         #opencvStatus { position: fixed; bottom: 20px; left: 20px; background: rgba(15, 23, 42, 0.85); color: white; padding: 8px 16px; border-radius: 8px; font-size: 13px; z-index: 10000; font-weight: 600; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(4px);}
         
+        /* 🌟 半透明毛玻璃回到頂部按鈕 */
         #backToTop { position: fixed; bottom: 30px; right: 30px; display: none; width: 50px; height: 50px; border-radius: 25px; font-size: 24px; background-color: rgba(51, 65, 85, 0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: white; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 9999; justify-content: center; align-items: center; transition: 0.3s; }
         #backToTop:hover { background-color: rgba(14, 165, 233, 0.8); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3); }
 
@@ -167,7 +171,7 @@
             <h2 style="margin-top:0;" data-i18n="loginTitle">系統登入</h2>
             <input type="text" id="loginUser" class="login-input" placeholder="帳號 / Username">
             <input type="password" id="loginPass" class="login-input" placeholder="密碼 / Password" onkeypress="if(event.key === 'Enter') handleLogin()">
-            <button onclick="handleLogin()" style="width: 100%; padding: 12px; font-size: 16px;"><i class="ph ph-lock-key"></i> <span data-i18n="btnLogin">驗證</span></button>
+            <button class="btn-primary" onclick="handleLogin()" style="width: 100%; padding: 12px; font-size: 16px;"><i class="ph ph-lock-key"></i> <span data-i18n="btnLogin">驗證</span></button>
             <p id="loginError" style="color:var(--danger); font-size:13px; margin-top:10px; display:none;"></p>
         </div>
     </div>
@@ -209,7 +213,7 @@
             </div>
             
             <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
-                <button id="btnStartOCR" disabled onclick="startHybridOCR()" style="padding: 10px 20px; font-size: 15px;">
+                <button id="btnStartOCR" class="btn-primary" disabled onclick="startHybridOCR()" style="padding: 10px 20px; font-size: 15px;">
                     <i class="ph ph-scan" style="font-size: 18px;"></i> <span data-i18n="btnStart">開始辨識</span>
                 </button>
                 <span id="loader" style="color: var(--primary); display: none; align-items: center; gap: 8px;">
@@ -221,8 +225,8 @@
                 <h3 style="display: flex; align-items: center; gap: 8px;"><i class="ph ph-list-dashes"></i> <span data-i18n="listTitle">料號清單</span></h3>
                 
                 <div class="toolbar" style="margin-bottom: 10px;">
-                    <button onclick="addManualShimRow()" style="background-color: var(--surface); color: var(--text-main); border: 1px solid var(--border);"><i class="ph ph-plus-circle" style="color: var(--primary);"></i> <span data-i18n="btnAddRow">手動新增</span></button>
-                    <button class="btn-danger action-btn" onclick="resetWorkspace()"><i class="ph ph-trash"></i> <span data-i18n="btnClear">清除重來</span></button>
+                    <button class="btn-secondary" onclick="addManualShimRow()"><i class="ph ph-plus-circle"></i> <span data-i18n="btnAddRow">手動新增</span></button>
+                    <button class="btn-danger" onclick="resetWorkspace()"><i class="ph ph-trash"></i> <span data-i18n="btnClear">清除重來</span></button>
                 </div>
 
                 <div class="list-container">
@@ -269,7 +273,7 @@
             <div id="sopOutputSection" style="display: none; margin-top: 40px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h3 style="display: flex; align-items: center; gap: 8px; color: #0f172a; margin: 0;"><i class="ph ph-image"></i> <span data-i18n="previewTitle">結果與微調</span></h3>
-                    <button class="btn-primary" id="btnCopySOP" onclick="copySOPImage(false)" style="background-color: #0f172a;">
+                    <button class="btn-primary" id="btnCopySOP" style="background-color: #0f172a;" onclick="copySOPImage(false)">
                         <i class="ph ph-copy" style="font-size: 18px;"></i> <span data-i18n="btnCopy">複製圖片</span>
                     </button>
                 </div>
@@ -336,10 +340,10 @@
                         <i class="ph ph-magnifying-glass" style="position: absolute; left: 10px; top: 10px; color: var(--text-muted);"></i>
                         <input type="text" id="searchInput" class="search-box" data-i18n-ph="dbSearch" placeholder="搜尋描述或料號..." onkeyup="searchTable()" style="padding-left: 32px; width: 100%; box-sizing: border-box; padding-top: 8px; padding-bottom: 8px; border: 1px solid var(--border); border-radius: 6px; outline: none;">
                     </div>
-                    <button onclick="addRow()" style="background-color: var(--surface); color: var(--text-main); border: 1px solid var(--border);"><i class="ph ph-plus" style="color: var(--primary);"></i> <span data-i18n="btnAddRowDb">新增列</span></button>
+                    <button class="btn-secondary" onclick="addRow()"><i class="ph ph-plus"></i> <span data-i18n="btnAddRowDb">新增列</span></button>
                     <input type="file" id="excelUpload" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleExcelUpload(event)">
                     <button class="btn-warning" onclick="document.getElementById('excelUpload').click()"><i class="ph ph-file-xls"></i> <span data-i18n="btnImport">載入 Excel</span></button>
-                    <button class="btn-secondary" style="background: #64748b; color: white;" onclick="checkDuplicates()"><i class="ph ph-warning"></i> <span data-i18n="btnCheck">檢查重複</span></button>
+                    <button class="btn-secondary" onclick="checkDuplicates()"><i class="ph ph-warning"></i> <span data-i18n="btnCheck">檢查重複</span></button>
                     
                     <div style="margin-left:15px; font-size:14px; font-weight:bold; color:var(--text-muted);">
                         <span data-i18n="totalRecords">總筆數</span>: <span id="dbCountBadge" class="count-badge">0</span>
@@ -375,7 +379,7 @@
                         <i class="ph ph-magnifying-glass" style="position: absolute; left: 10px; top: 10px; color: var(--text-muted);"></i>
                         <input type="text" id="historySearchInput" class="search-box" data-i18n-ph="histSearch" placeholder="🔍 搜尋標題或料號..." onkeyup="renderHistoryTab()" style="padding-left: 32px; width: 100%; box-sizing: border-box; padding-top: 8px; padding-bottom: 8px; border: 1px solid var(--border); border-radius: 6px; outline: none;">
                     </div>
-                    <button id="btnHistorySort" class="btn-secondary" onclick="toggleHistorySort()" style="background: #ffffff; color: var(--text-main); border: 1px solid var(--border); font-size: 14px; padding: 8px 16px;">
+                    <button id="btnHistorySort" class="btn-secondary" onclick="toggleHistorySort()">
                         <i class="ph ph-clock"></i> <span id="histSortText" data-i18n="histSortNew">最新儲存</span>
                     </button>
                 </div>
@@ -389,7 +393,7 @@
     <canvas id="hiddenStitchedCanvas" style="display:none;"></canvas>
 
     <script>
-        // 🌟 閒置計時器 (4小時 = 14400000 毫秒) 🌟
+        // 🌟 閒置計時器 (4小時) 🌟
         let idleTimeout;
         const IDLE_LIMIT_MS = 4 * 60 * 60 * 1000; 
 
@@ -403,7 +407,6 @@
             }, IDLE_LIMIT_MS);
         }
 
-        // 監聽操作，有動靜就重置 4 小時倒數
         ['mousemove', 'keydown', 'scroll', 'click', 'touchstart'].forEach(evt => {
             document.addEventListener(evt, () => {
                 if(document.getElementById('mainApp').style.display === 'block') {
@@ -417,7 +420,6 @@
             const user = document.getElementById('loginUser').value;
             const pass = document.getElementById('loginPass').value;
             
-            // 這裡設定預設帳號密碼
             if(user === 'admin' && pass === 'shimshim') {
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
@@ -599,20 +601,29 @@
             if(document.getElementById('sopCanvas').innerHTML !== '') generateSOP(false, true);
         }
 
+        // 🌟 退回原本可使用的「100% 重置」邏輯 🌟
         function resetWorkspace() {
             if(!confirm(i18nDict[currentLang].confirmClear)) return;
-            document.getElementById('resultList').innerHTML = ''; document.getElementById('ocrResultContainer').style.display = 'none';
-            document.getElementById('sopOutputSection').style.display = 'none'; document.getElementById('sopCanvas').innerHTML = '';
-            document.getElementById('manualSeqBox').style.display = 'none'; document.getElementById('balloonGridContainer').innerHTML = '';
+            document.getElementById('resultList').innerHTML = ''; 
+            document.getElementById('ocrResultContainer').style.display = 'none';
+            document.getElementById('sopOutputSection').style.display = 'none'; 
+            document.getElementById('sopCanvas').innerHTML = '';
+            document.getElementById('manualSeqBox').style.display = 'none'; 
+            document.getElementById('balloonGridContainer').innerHTML = '';
             document.getElementById('stackOcrStatus').style.display = 'none'; 
             document.getElementById('sopTitleInput').value = ''; 
+            
             base64Desc = ""; base64Stack = "";
-            document.getElementById('imgDesc').style.display = 'none'; document.getElementById('imgStack').style.display = 'none';
+            const imgDesc = document.getElementById('imgDesc');
+            const imgStack = document.getElementById('imgStack');
+            imgDesc.style.display = 'none'; imgStack.style.display = 'none';
+            imgDesc.removeAttribute('src'); imgStack.removeAttribute('src'); 
             
             document.getElementById('titleDesc').innerHTML = `<span data-i18n="step1">${i18nDict[currentLang].step1}</span> <span style="font-size:12px; font-weight:normal; color:var(--text-muted);" data-i18n="step1Req">${i18nDict[currentLang].step1Req}</span>`;
             document.getElementById('titleStack').innerHTML = `<span data-i18n="step2">${i18nDict[currentLang].step2}</span> <span style="font-size:12px; font-weight:normal; color:var(--text-muted);" data-i18n="step2Opt">${i18nDict[currentLang].step2Opt}</span>`;
             
-            document.getElementById('btnStartOCR').disabled = true; setActiveZone('Desc');
+            document.getElementById('btnStartOCR').disabled = true; 
+            setActiveZone('Desc');
             
             const leftSide = document.getElementById('resultList').parentElement; const rightSide = document.querySelector('.generate-controls');
             leftSide.style.flex = '1 1 50%'; rightSide.style.flex = '1 1 50%';
@@ -689,8 +700,16 @@
                 document.removeEventListener('mousemove', mouseMoveHandler); document.removeEventListener('mouseup', mouseUpHandler);
             };
             if(resizer) resizer.addEventListener('mousedown', mouseDownHandler);
+            
+            // PWA Service Worker 註冊
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+                });
+            }
         });
 
+        // 🌟 徹底退回原本 100% 穩定的 Proxy 連線機制 🌟
         async function callOcrApi(base64Img, engine = '2', isTable = 'true', loaderTextEl = null) {
             for (let attempt = 1; attempt <= 3; attempt++) {
                 try {
@@ -714,10 +733,8 @@
                     const result = await response.json();
                     
                     if (result.IsErroredOnProcessing) {
-                        let errorMsg = result.ErrorMessage ? result.ErrorMessage : JSON.stringify(result);
-                        console.error("API Error:", errorMsg);
-                        if (loaderTextEl) loaderTextEl.innerText = `API Error: ${errorMsg}`;
-                        if (attempt === 3) alert((currentLang==='zh'?'API 錯誤：\n':'API Error:\n') + errorMsg);
+                        console.error("API Error:", result.ErrorMessage || JSON.stringify(result));
+                        if (loaderTextEl) loaderTextEl.innerText = `API Error`;
                         await new Promise(r => setTimeout(r, 1500));
                         continue; 
                     }
@@ -728,8 +745,7 @@
                     }
                 } catch (e) { 
                     console.warn(`Cloud OCR Attempt ${attempt} failed`, e); 
-                    if (loaderTextEl) loaderTextEl.innerText = (currentLang==='zh'?`網路超時: ${e.message}`:`Timeout: ${e.message}`);
-                    if (attempt === 3) alert((currentLang==='zh'?'網路超時/阻擋: ':'Connection Timeout/Blocked: ') + e.message);
+                    if (loaderTextEl) loaderTextEl.innerText = (currentLang==='zh'?`網路超時...`:`Timeout...`);
                 }
                 if(attempt < 3) await new Promise(r => setTimeout(r, 1500));
             }
@@ -739,6 +755,12 @@
         async function startHybridOCR() {
             if (!isCvReady) { showToast(currentLang==='zh'?"視覺引擎尚未準備好":"Vision engine loading...", 'warning'); return; }
             const btn = document.getElementById('btnStartOCR'); const loader = document.getElementById('loader'); const loaderText = document.getElementById('loaderText');
+            
+            if (!base64Desc) {
+                showToast(currentLang==='zh'?"請先貼上料號圖片！":"Please paste Description image!", 'warning');
+                return;
+            }
+
             btn.disabled = true; loader.style.display = 'inline-flex'; document.getElementById('stackOcrStatus').style.display = 'none';
 
             try {
@@ -804,7 +826,12 @@
                 }
                 processDualResult(descText, sequenceArray, circleCount, croppedImages);
                 showToast(currentLang==='zh'?"辨識完成":"Extraction done", 'success');
-            } catch (error) { showToast(currentLang==='zh'?"發生錯誤":"Error occurred", 'error'); console.error(error); } finally { btn.disabled = false; loader.style.display = 'none'; }
+            } catch (error) { 
+                showToast(currentLang==='zh'?"發生未預期的錯誤，請重試":"Error occurred", 'error'); 
+                console.error("OCR Runtime Error:", error); 
+            } finally { 
+                btn.disabled = false; loader.style.display = 'none'; 
+            }
         }
 
         function processDualResult(descText, sequenceArray, circleCount = 0, croppedImages = []) {
@@ -1228,7 +1255,7 @@
                 const displayTitle = record.sopTitle ? record.sopTitle : record.name;
                 const titleSnippet = `<div style="font-size:12px; color:var(--warning); background:#fffbeb; padding:4px 8px; border-radius:4px; display:inline-block; margin-top:6px; font-family: monospace;">${displayTitle.replace(/\n/g, ' ↵ ')}</div>`;
                 
-                card.innerHTML = `<div class="history-info"><div class="history-title">${record.name}</div><div class="history-date"><i class="ph ph-calendar-blank"></i> ${record.date} | ${record.data.length} ${currentLang==='zh'?'筆':'Items'}</div>${titleSnippet}</div><div style="display:flex; gap:8px;"><button class="btn-success" onclick="loadHistoryItem('${record.id}')"><i class="ph ph-download-simple"></i> ${currentLang==='zh'?'載入':'Load'}</button><button class="btn-danger" onclick="deleteHistoryItem('${record.id}')"><i class="ph ph-trash"></i></button></div>`;
+                card.innerHTML = `<div class="history-info"><div class="history-title">${record.name}</div><div class="history-date"><i class="ph ph-calendar-blank"></i> ${record.date} | ${record.data.length} ${currentLang==='zh'?'筆':'Items'}</div>${titleSnippet}</div><div style="display:flex; gap:8px;"><button class="btn-secondary" onclick="loadHistoryItem('${record.id}')"><i class="ph ph-download-simple"></i> ${currentLang==='zh'?'載入':'Load'}</button><button class="btn-danger" onclick="deleteHistoryItem('${record.id}')"><i class="ph ph-trash"></i></button></div>`;
                 container.appendChild(card);
             });
 
@@ -1250,6 +1277,7 @@
                 base64Desc = ""; base64Stack = "";
                 document.getElementById('imgDesc').style.display = 'none';
                 document.getElementById('imgStack').style.display = 'none';
+                
                 document.getElementById('titleDesc').innerHTML = `<span data-i18n="step1">${i18nDict[currentLang].step1}</span> <span style="font-size:12px; font-weight:normal; color:var(--text-muted);" data-i18n="step1Req">${i18nDict[currentLang].step1Req}</span>`;
                 document.getElementById('titleStack').innerHTML = `<span data-i18n="step2">${i18nDict[currentLang].step2}</span> <span style="font-size:12px; font-weight:normal; color:var(--text-muted);" data-i18n="step2Opt">${i18nDict[currentLang].step2Opt}</span>`;
                 document.getElementById('btnStartOCR').disabled = true;
@@ -1413,7 +1441,6 @@
             } 
             if (hasDuplicate) {
                 showToast(currentLang==='zh'?'發現重複料號':'Duplicates found', "warning");
-                // 🌟 自動捲動到第一個重複的地方 🌟
                 const firstDuplicate = document.querySelector('.duplicate-row');
                 if(firstDuplicate) firstDuplicate.scrollIntoView({behavior: "smooth", block: "center"});
             }
